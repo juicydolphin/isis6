@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodeapp-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nodeapp
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: nodeapp
+    spec:
+      containers:
+        - name: my-node-container
+          image: kirillkrinitsky/krinitsky-image:1.0
+          ports:
+            - containerPort: 8080
+          args:
+            - /bin/sh
+            - -c
+            - touch /tmp/healthy; sleep 20; rm -rf /tmp/healthy; sleep 600
+          readinessProbe:
+            exec:
+              command:
+                - cat
+                - /tmp/healthy
+            failureThreshold: 3
+            successThreshold: 1
+            periodSeconds: 3
